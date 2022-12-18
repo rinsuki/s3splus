@@ -184,7 +184,7 @@ while True:
         ret2, frame2 = cv2.threshold(gray, 0xE0, 255, cv2.THRESH_BINARY)
         # lobby
         if BATTLE_LOBBY_MATCHING_PREFIX.check(frame2):
-            if change_current_state(State.BATTLE_LOBBY_MATCHING):
+            if current_state != State.BATTLE_RESULT_SCOREBOARD or current_state_frames > 30 or change_current_state(State.BATTLE_LOBBY_MATCHING):
                 print("matching...")
         if BATTLE_LOBBY_MATCHED.check(frame2):
             if change_current_state(State.BATTLE_LOBBY_MATCHED):
