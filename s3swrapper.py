@@ -47,7 +47,8 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
     if payload["agent"] != "s3s":
         return orig_msgpack_packb(payload, *args, **kwargs)
     payload["image_judge"] = open(f"{latest_battle_id}/result.png", "rb").read()
-    payload["image_result"] = open(f"{latest_battle_id}/result_scoreboard.png", "rb").read()
+    if os.path.exists(f"{latest_battle_id}/result_scoreboard.png"):
+        payload["image_result"] = open(f"{latest_battle_id}/result_scoreboard.png", "rb").read()
     payload["image_gear"] = open(f"{latest_battle_id}/result_profile.png", "rb").read()
     payload["agent"] = "s3splus"
     payload["agent_version"] = plusutils.PLUS_VERSION
@@ -64,4 +65,4 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
     return orig_msgpack_packb(payload, *args, **kwargs)
 msgpack.packb = overrided_msgpack_packb
 
-fetch_and_upload_single_result(get_latest_splatnet_battle_id(), "battle", False, True)
+fetch_and_upload_single_result(get_latest_splatnet_battle_id(), "battle", False, False)

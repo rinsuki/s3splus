@@ -1,6 +1,7 @@
 import datetime
 from enum import Enum
 import json
+import subprocess
 import cv2
 import numpy
 import os
@@ -78,6 +79,7 @@ class Mask:
 
 class State(Enum):
     UNKNOWN = 0
+    ERROR_SCHEDULE_REFRESH = -100
     BATTLE_LOBBY = 100
     BATTLE_LOBBY_MATCHING = 150
     BATTLE_LOBBY_MATCHED = 190
@@ -111,6 +113,7 @@ BATTLE_INTRO_RULE_AREA = Mask("battle_intro_rule_area")
 BATTLE_INTRO_RULE_YAGURA = Mask("battle_intro_rule_yagura")
 BATTLE_INTRO_RULE_HOKO = Mask("battle_intro_rule_hoko")
 BATTLE_INTRO_RULE_ASARI = Mask("battle_intro_rule_asari")
+ERROR_SCHEDULE_REFRESH = Mask("error_schedule_refresh")
 
 current_state = State.UNKNOWN
 current_state_frames = 0
@@ -167,6 +170,13 @@ def set_current_battle_id(battle_id: str):
     current_battle_id = battle_id
     os.makedirs(current_battle_dir(), exist_ok=True)
 
+can_finalize = False
+def finalize_if_need():
+    global can_finalize
+    if can_finalize:
+        subprocess.Popen(["python3", "s3swrapper.py"], stdout=sys.stdout, stderr=sys.stderr)
+        can_finalize = False
+
 while True:
     ret, frame = cap.read(cv2.IMREAD_GRAYSCALE)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -179,7 +189,12 @@ while True:
         if BATTLE_LOBBY_MATCHED.check(frame2):
             if change_current_state(State.BATTLE_LOBBY_MATCHED):
                 print("matched!")
+                finalize_if_need()
                 set_current_battle_id(generate_battle_id())
+        if ERROR_SCHEDULE_REFRESH.check(frame2):
+            if change_current_state(State.ERROR_SCHEDULE_REFRESH):
+                print("schedule refresh!")
+                finalize_if_need()
         # ingame
         if BATTLE_INTRO_TITLE.check(frame2):
             rule = None
@@ -242,11 +257,13 @@ while True:
                 print("result-profile!")
             if current_state_frames == 30:
                 cv2.imwrite(f"{current_battle_dir()}/result_profile.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+                can_finalize = True
         if BATTLE_RESULT_SCOREBOARD_ABUTTON.check(frame2) and BATTLE_RESULT_SCOREBOARD_WINP.check(frame2, 0.9):
             if change_current_state(State.BATTLE_RESULT_SCOREBOARD):
                 print("result-scoreboard!")
             if current_state_frames == 30:
                 cv2.imwrite(f"{current_battle_dir()}/result_scoreboard.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+                finalize_if_need()
         cv2.imshow("frame", frame2)
         i += 1
         if i % 2 == 0:
