@@ -1,0 +1,3 @@
+[submodule "s3s"]
+	path = s3s
+	url = https://github.com/frozenpandaman/s3s
