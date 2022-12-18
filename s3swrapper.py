@@ -61,7 +61,7 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
     rule_expected = open(latest_battle_id + "/rule.txt", "r").read().strip()
     if payload["rule"] != rule_expected.lower():
         raise Exception("invalid rule!!", payload["rule"], rule_expected)
-    print(payload)
+    # print(payload)
     return orig_msgpack_packb(payload, *args, **kwargs)
 msgpack.packb = overrided_msgpack_packb
 
