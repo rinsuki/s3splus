@@ -88,6 +88,13 @@ class State(Enum):
     BATTLE_RESULT_PROFILE = 350
     BATTLE_RESULT_SCOREBOARD = 390
 
+class Rule(Enum):
+    NAWABARI = 100
+    AREA = 200
+    YAGURA = 300
+    HOKO = 400
+    ASARI = 500
+
 BATTLE_LOBBY_MATCHING_PREFIX = Mask("battle_lobby_matching_prefix")
 BATTLE_LOBBY_MATCHED = Mask("battle_lobby_matched")
 BATTLE_INTRO_TITLE = Mask("battle_intro_title")
@@ -99,6 +106,11 @@ BATTLE_INGAME_TIME_COLON = Mask("battle_ingame_time_colon")
 BATTLE_INGAME_MUSIC_HEADER = Mask("battle_ingame_music_header")
 BATTLE_RESULT_SCOREBOARD_ABUTTON = Mask("battle_result_scoreboard_abutton")
 BATTLE_RESULT_SCOREBOARD_WINP = Mask("battle_result_scoreboard_winp")
+BATTLE_INTRO_RULE_NAWABARI = Mask("battle_intro_rule_nawabari")
+BATTLE_INTRO_RULE_AREA = Mask("battle_intro_rule_area")
+BATTLE_INTRO_RULE_YAGURA = Mask("battle_intro_rule_yagura")
+BATTLE_INTRO_RULE_HOKO = Mask("battle_intro_rule_hoko")
+BATTLE_INTRO_RULE_ASARI = Mask("battle_intro_rule_asari")
 
 current_state = State.UNKNOWN
 current_state_frames = 0
@@ -170,8 +182,24 @@ while True:
                 set_current_battle_id(generate_battle_id())
         # ingame
         if BATTLE_INTRO_TITLE.check(frame2):
-            if change_current_state(State.BATTLE_INGAME_INTRO):
-                print("intro!")
+            rule = None
+            if BATTLE_INTRO_RULE_NAWABARI.check(frame2):
+                rule = Rule.NAWABARI
+            elif BATTLE_INTRO_RULE_AREA.check(frame2):
+                rule = Rule.AREA
+            elif BATTLE_INTRO_RULE_YAGURA.check(frame2):
+                rule = Rule.YAGURA
+            elif BATTLE_INTRO_RULE_HOKO.check(frame2):
+                rule = Rule.HOKO
+            elif BATTLE_INTRO_RULE_ASARI.check(frame2):
+                rule = Rule.ASARI
+            if rule is not None:
+                if change_current_state(State.BATTLE_INGAME_INTRO):
+                    print("intro! rule=", rule)
+                    with open(f"{current_battle_dir()}/rule.txt", "w") as f:
+                        f.write(rule.name)
+            else:
+                print("failed to detect rule")
             if current_state_frames == 10:
                 cv2.imwrite(f"{current_battle_dir()}/intro.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
         if BATTLE_INGAME_TIME_COLON.check(frame2):

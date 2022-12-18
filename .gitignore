@@ -1,2 +1,3 @@
-battles/*/*.png
+battles/*
 **/__pycache__
+historydumpertokens.json
