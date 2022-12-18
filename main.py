@@ -86,6 +86,7 @@ class State(Enum):
     BATTLE_RESULT_PRE_FULLMAP = 300
     BATTLE_RESULT = 310
     BATTLE_RESULT_PROFILE = 350
+    BATTLE_RESULT_SCOREBOARD = 390
 
 BATTLE_LOBBY_MATCHING_PREFIX = Mask("battle_lobby_matching_prefix")
 BATTLE_LOBBY_MATCHED = Mask("battle_lobby_matched")
@@ -96,6 +97,8 @@ BATTLE_MAP_ICON = Mask("battle_map_icon")
 BATTLE_RESULT_MEDAL_HEADER = Mask("battle_result_medal_header")
 BATTLE_INGAME_TIME_COLON = Mask("battle_ingame_time_colon")
 BATTLE_INGAME_MUSIC_HEADER = Mask("battle_ingame_music_header")
+BATTLE_RESULT_SCOREBOARD_ABUTTON = Mask("battle_result_scoreboard_abutton")
+BATTLE_RESULT_SCOREBOARD_WINP = Mask("battle_result_scoreboard_winp")
 
 current_state = State.UNKNOWN
 current_state_frames = 0
@@ -211,6 +214,11 @@ while True:
                 print("result-profile!")
             if current_state_frames == 30:
                 cv2.imwrite(f"{current_battle_dir()}/result_profile.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        if BATTLE_RESULT_SCOREBOARD_ABUTTON.check(frame2) and BATTLE_RESULT_SCOREBOARD_WINP.check(frame2, 0.9):
+            if change_current_state(State.BATTLE_RESULT_SCOREBOARD):
+                print("result-scoreboard!")
+            if current_state_frames == 30:
+                cv2.imwrite(f"{current_battle_dir()}/result_scoreboard.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
         cv2.imshow("frame", frame2)
         i += 1
         if i % 2 == 0:
