@@ -238,9 +238,10 @@ while True:
                     current_music_title_mask_store = None
         elif current_state == State.BATTLE_INGAME and current_state_frames > 600 and BATTLE_MAP_ICON.check(frame2, 0.9):
             # result - finish map
-            if change_current_state(State.BATTLE_RESULT_PRE_FULLMAP):
-                print("result-map!")
-                cv2.imwrite(f"{current_battle_dir()}/result-map.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+            # if change_current_state(State.BATTLE_RESULT_PRE_FULLMAP):
+            #     print("result-map!")
+            #     cv2.imwrite(f"{current_battle_dir()}/result-map.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+            pass
         # result
         if BATTLE_RESULT_WIN.check(frame2):
             if change_current_state(State.BATTLE_RESULT):
