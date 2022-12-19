@@ -2,6 +2,7 @@ import json
 from PIL import Image
 import requests
 import os
+from plus.config import UPLOAD_MODE
 from s3sproxy import prepare_battle_result, headbutt, s3s, utils, prefetch_checks, write_config, CONFIG_DATA, check_statink_key, set_language, fetch_and_upload_single_result
 from glob import glob
 import functools
@@ -23,6 +24,11 @@ def get_latest_splatnet_battle_id():
 def pre_check():
     check_statink_key()
     set_language()
+    # NOTE: this is hack for my own use-case
+    #       originally i wrote small server that returns last token that used by app
+    #       to use with rinsuki-lab/spl3historydumper
+    #       normal people should use s3s's flapi method instead
+    #       (...but if you are reading this source, you might not be normal people...?)
     if os.path.exists("historydumpertokens.json"):
         hdt = json.load(open("historydumpertokens.json"))
         res = requests.post(hdt["http"]["url"], headers=hdt["http"]["headers"])
@@ -65,4 +71,4 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
     return orig_msgpack_packb(payload, *args, **kwargs)
 msgpack.packb = overrided_msgpack_packb
 
-fetch_and_upload_single_result(get_latest_splatnet_battle_id(), "battle", False, False)
+fetch_and_upload_single_result(get_latest_splatnet_battle_id(), "battle", False, UPLOAD_MODE != "enable")
