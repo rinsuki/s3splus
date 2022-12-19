@@ -39,7 +39,7 @@ print(get_latest_splatnet_battle_id())
 
 latest_battle_id = glob("battles/20*")
 latest_battle_id.sort()
-latest_battle_id = latest_battle_id[-1]
+latest_battle_id = os.environ.get("S3SPLUS_BATTLE_DIR") or latest_battle_id[-1]
 print(latest_battle_id)
 
 orig_msgpack_packb = msgpack.packb

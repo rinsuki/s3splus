@@ -44,7 +44,10 @@ class BattleDetector:
     def finalize_if_need(self):
         if self.can_finalize:
             print("start finalize")
-            subprocess.Popen(["python3", "s3swrapper.py"], stdout=sys.stdout, stderr=sys.stderr)
+            subprocess.Popen(["python3", "s3swrapper.py"], stdout=sys.stdout, stderr=sys.stderr, env={
+                **os.environ,
+                "S3SPLUS_BATTLE_DIR": self.current_battle_dir(),
+            })
             self.can_finalize = False
         pass
     
