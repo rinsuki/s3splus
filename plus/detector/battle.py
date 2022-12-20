@@ -101,7 +101,7 @@ class BattleDetector:
                         f.write(rule.name)
             else:
                 print("failed to detect rule")
-            if self.current_state_frames == 10:
+            if self.current_state_frames == 20:
                 cv2.imwrite(f"{self.current_battle_dir()}/intro.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
         if BATTLE_INGAME_TIME_COLON.check(frameBW):
             if self.change_state(State.BATTLE_INGAME):
