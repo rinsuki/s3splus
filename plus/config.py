@@ -1,4 +1,5 @@
 import json
+import os
 
 from .constants import SUPPORTED_GAME_LANGS
 
@@ -21,7 +22,7 @@ if config_changed:
     with open("config.json", "w") as f:
         json.dump(config, f, indent=4)
 
-_upload_mode = config.get("S3SPLUS_UPLOAD_MODE", "").lower()
+_upload_mode = os.environ.get("S3SPLUS_UPLOAD_MODE", "").lower()
 if _upload_mode == "test":
     UPLOAD_MODE = "test"
 elif _upload_mode == "enable":
