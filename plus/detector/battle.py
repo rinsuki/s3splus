@@ -1,10 +1,15 @@
 import datetime
 from enum import Enum
+import json
 import os
+import signal
 import subprocess
 import sys
+import threading
 import cv2
 import numpy
+
+from plus.config import RECORD_OPTIONS
 
 from ..mask.music import MusicTitleMaskStore
 
@@ -30,6 +35,8 @@ class BattleDetector:
         self.current_state_frames = 0
         self.change_state_was_called = False
         self.prepare_next_battle("-startmissing")
+        self.recording = None
+        self.finalizing = None
     
     def change_state(self, state: State):
         if self.current_state != state:
@@ -44,19 +51,39 @@ class BattleDetector:
     def finalize_if_need(self):
         if self.can_finalize:
             print("start finalize")
-            subprocess.Popen(["python3", "s3swrapper.py"], stdout=sys.stdout, stderr=sys.stderr, env={
-                **os.environ,
-                "S3SPLUS_BATTLE_DIR": self.current_battle_dir(),
-            })
+            if self.finalizing is not None:
+                self.finalizing.join()
+            current_battle_dir = self.current_battle_dir()
+            self.finalizing = threading.Thread(target=self._finalize_another_thread, args=(current_battle_dir,))
+            self.finalizing.run()
             self.can_finalize = False
-        pass
-    
+    def _finalize_another_thread(self, battle_dir: str):
+        print("finalizing on another thread...")
+        recording_json = None
+        if self.recording is not None:
+            self.recording.send_signal(signal.SIGINT)
+            stdout_text, _ = self.recording.communicate()
+            print(stdout_text)
+            recording_json = json.loads(stdout_text)
+            print("got recording response!")
+        subprocess.Popen(["python3", "s3swrapper.py"], stdout=sys.stdout, stderr=sys.stderr, env={
+            **os.environ,
+            "S3SPLUS_BATTLE_DIR": battle_dir,
+            "S3SPLUS_RECORDING_JSON": json.dumps(recording_json),
+        })
+        self.finalizing = None
+
     def prepare_next_battle(self, suffix: str = ""):
         self.current_battle_id = datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + suffix
         print("prepare next battle", self.current_battle_id)
         self._current_battle_dir = None
         self.current_music_title_mask_store = None
         self.can_finalize = False
+    
+    def start_recording(self):
+        if not RECORD_OPTIONS:
+            return
+        self.recording = RECORD_OPTIONS.create()
     
     def current_battle_dir(self):
         if self._current_battle_dir is None:
@@ -77,6 +104,7 @@ class BattleDetector:
                 print("matched!")
                 self.finalize_if_need()
                 self.prepare_next_battle()
+                self.start_recording()
         if ERROR_SCHEDULE_REFRESH.check(frameBW):
             if self.change_state(State.ERROR_SCHEDULE_REFRESH):
                 print("schedule refresh!")

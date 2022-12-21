@@ -1,3 +1,7 @@
 {
-    "GAME_LANG": "ja"
+    "game_lang": "ja",
+    "record": {
+        "command": ["python3", "/path/to/record_switch.py"],
+        "returns_json": true
+    }
 }

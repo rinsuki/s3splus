@@ -43,6 +43,8 @@ def pre_check():
 pre_check()
 print(get_latest_splatnet_battle_id())
 
+recording_json = json.loads(os.environ.get("S3SPLUS_RECORDING_JSON", "null"))
+
 latest_battle_id = glob("battles/20*")
 latest_battle_id.sort()
 latest_battle_id = os.environ.get("S3SPLUS_BATTLE_DIR") or latest_battle_id[-1]
@@ -67,6 +69,8 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
     rule_expected = open(latest_battle_id + "/rule.txt", "r").read().strip()
     if payload["rule"] != rule_expected.lower():
         raise Exception("invalid rule!!", payload["rule"], rule_expected)
+    if recording_json is not None:
+        payload["link_url"] = recording_json.get("url")
     # print(payload)
     return orig_msgpack_packb(payload, *args, **kwargs)
 msgpack.packb = overrided_msgpack_packb
