@@ -28,6 +28,7 @@ class State(Enum):
     BATTLE_RESULT = 310
     BATTLE_RESULT_PROFILE = 350
     BATTLE_RESULT_SCOREBOARD = 390
+    BATTLE_RESULT_BANKARA_CHALLENGE_FINISH = 391
 
 class BattleDetector:
     def __init__(self):
@@ -178,4 +179,9 @@ class BattleDetector:
                 print("result-scoreboard!")
             if self.current_state_frames == 30:
                 cv2.imwrite(f"{self.current_battle_dir()}/result_scoreboard.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+                self.finalize_if_need()
+        if BATTLE_RESULT_BANKARA_CHALLENGE_FINISH_TITLE.check(frameBW) and BATTLE_RESULT_BANKARA_CHALLENGE_FINISH_ABUTTON.check(frameBW):
+            if self.change_state(State.BATTLE_RESULT_BANKARA_CHALLENGE_FINISH):
+                print("result-bankara-challenge-finish!")
+                cv2.imwrite(f"{self.current_battle_dir()}/result_bankara_challenge_finish.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
                 self.finalize_if_need()
