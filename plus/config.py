@@ -46,6 +46,9 @@ if config_changed:
     with open("config.json", "w") as f:
         json.dump(config, f, indent=4)
 
+def force_disable_record():
+    RECORD_OPTIONS = None
+
 _upload_mode = os.environ.get("S3SPLUS_UPLOAD_MODE", "").lower()
 if _upload_mode == "test":
     UPLOAD_MODE = "test"

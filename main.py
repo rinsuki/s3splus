@@ -9,8 +9,13 @@ import sys
 import re
 
 from plus.detector.battle import BattleDetector
+from plus.config import force_disable_record
 
-cap = cv2.VideoCapture(sys.argv[1] if re.match(r"^-?[0-9]+$", sys.argv[1]) is None else int(sys.argv[1]))
+input_file = sys.argv[1] if re.match(r"^-?[0-9]+$", sys.argv[1]) is None else int(sys.argv[1])
+cap = cv2.VideoCapture(input_file)
+if type(input_file) is not int:
+    print("[NOTE] Recording is disabled because input is recorded file", file=sys.stderr)
+    force_disable_record()
 if not cap.isOpened():
     raise Exception("cant open specified movie file")
 
