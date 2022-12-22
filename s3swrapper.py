@@ -12,6 +12,7 @@ import msgpack
 
 
 GET_LATEST_BATTLE_ID = "0329c535a32f914fd44251be1f489e24"
+GET_LATEST_SALMON_ID = "a2704e18852efce9cdbc61e205e1ed4e"
 
 def get_latest_splatnet_battle_id():
     res = requests.post(utils.GRAPHQL_URL,
@@ -20,6 +21,13 @@ def get_latest_splatnet_battle_id():
     )
     res.raise_for_status()
     return res.json()["data"]["vsResult"]["historyGroups"]["nodes"][0]["historyDetails"]["nodes"][0]["id"]
+
+def get_latest_splatnet_salmon_id():
+    res = requests.post(utils.GRAPHQL_URL,
+        data=utils.gen_graphql_body(GET_LATEST_SALMON_ID),
+        headers=headbutt()
+    )
+    return res.json()["data"]["coopResult"]["historyGroupsOnlyFirst"]["nodes"][0]["historyDetails"]["nodes"][0]["id"]
 
 def pre_check():
     check_statink_key()
@@ -54,25 +62,34 @@ orig_msgpack_packb = msgpack.packb
 def overrided_msgpack_packb(payload, *args, **kwargs):
     if payload["agent"] != "s3s":
         return orig_msgpack_packb(payload, *args, **kwargs)
-    payload["image_judge"] = open(f"{latest_battle_id}/result.png", "rb").read()
-    if os.path.exists(f"{latest_battle_id}/result_scoreboard.png"):
-        payload["image_result"] = open(f"{latest_battle_id}/result_scoreboard.png", "rb").read()
-    payload["image_gear"] = open(f"{latest_battle_id}/result_profile.png", "rb").read()
     payload["agent"] = "s3splus"
     payload["agent_version"] = plusutils.PLUS_VERSION
-    with Image.open(latest_battle_id + "/music-title.png") as img:
-        payload["agent_variables"]["Plus: Music Width"] = img.size[0]
-        from pytesseract import pytesseract
-        header_width = Image.open("masks/und/battle_ingame_music_header.png").size[0]
-        img = img.crop((header_width, 0, img.size[0], img.size[1]))
-        payload["agent_variables"]["Plus: Music OCRed Text"] = pytesseract.image_to_string(img, "eng+jpn").strip()
-    rule_expected = open(latest_battle_id + "/rule.txt", "r").read().strip()
-    if payload["rule"] != rule_expected.lower():
-        raise Exception("invalid rule!!", payload["rule"], rule_expected)
+    if not is_salmon:
+        payload["image_judge"] = open(f"{latest_battle_id}/result.png", "rb").read()
+        if os.path.exists(f"{latest_battle_id}/result_scoreboard.png"):
+            payload["image_result"] = open(f"{latest_battle_id}/result_scoreboard.png", "rb").read()
+        payload["image_gear"] = open(f"{latest_battle_id}/result_profile.png", "rb").read()
+        with Image.open(latest_battle_id + "/music-title.png") as img:
+            payload["agent_variables"]["Plus: Music Width"] = img.size[0]
+            from pytesseract import pytesseract
+            header_width = Image.open("masks/und/battle_ingame_music_header.png").size[0]
+            img = img.crop((header_width, 0, img.size[0], img.size[1]))
+            payload["agent_variables"]["Plus: Music OCRed Text"] = pytesseract.image_to_string(img, "eng+jpn").strip()
+        rule_expected = open(latest_battle_id + "/rule.txt", "r").read().strip()
+        if payload["rule"] != rule_expected.lower():
+            raise Exception("invalid rule!!", payload["rule"], rule_expected)
+    else:
+        # TODO: add salmon additional info
+        pass
     if recording_json is not None:
         payload["link_url"] = recording_json.get("url")
     # print(payload)
     return orig_msgpack_packb(payload, *args, **kwargs)
 msgpack.packb = overrided_msgpack_packb
 
-fetch_and_upload_single_result(get_latest_splatnet_battle_id(), "battle", False, UPLOAD_MODE != "enable")
+is_salmon = os.environ.get("S3SPLUS_IS_SALMON") == "YES"
+
+if is_salmon:
+    fetch_and_upload_single_result(get_latest_splatnet_salmon_id(), "job", False, UPLOAD_MODE != "enable")
+else:
+    fetch_and_upload_single_result(get_latest_splatnet_battle_id(), "battle", False, UPLOAD_MODE != "enable")

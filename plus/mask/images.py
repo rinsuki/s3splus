@@ -1,6 +1,7 @@
 from .mask import Mask
 
-BATTLE_LOBBY_MATCHING_PREFIX = Mask("battle_lobby_matching_prefix")
+SHARAED_LOBBY_MATCHING_PREFIX = Mask("shared_lobby_matching_prefix")
+
 BATTLE_LOBBY_MATCHED = Mask("battle_lobby_matched")
 BATTLE_INTRO_TITLE = Mask("battle_intro_title")
 BATTLE_RESULT_LOSE = Mask("battle_result_lose")
@@ -20,4 +21,10 @@ BATTLE_INTRO_RULE_TRICOLOR_GUARD = Mask("battle_intro_rule_tricolor_guard")
 BATTLE_INTRO_RULE_TRICOLOR_ATTACK = Mask("battle_intro_rule_tricolor_attack")
 BATTLE_RESULT_BANKARA_CHALLENGE_FINISH_TITLE = Mask("battle_result_bankara_challenge_finish_title")
 BATTLE_RESULT_BANKARA_CHALLENGE_FINISH_ABUTTON = Mask("battle_result_bankara_challenge_finish_abutton")
+
+SALMON_LOBBY_MATCHED = Mask("salmon_lobby_matched")
+SALMON_INGAME_WAVE_HEADER = Mask("salmon_ingame_wave_header")
+SALMON_RESULT_PLAYERLIST_1ST_DEAD_COUNT = Mask("salmon_result_playerlist_1st_dead_count")
+SALMON_RESULT_POINT_DESC_HEADER = Mask("salmon_result_point_desc_header")
+
 ERROR_SCHEDULE_REFRESH = Mask("error_schedule_refresh")

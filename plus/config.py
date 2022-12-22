@@ -34,20 +34,23 @@ class RecordOptions:
             shell=type(self.command) is str
         )
 
-RECORD_OPTIONS = config.get("record")
-if not RECORD_OPTIONS:
+__RECORD_OPTIONS = config.get("record")
+def get_record_options():
+    return __RECORD_OPTIONS
+if not __RECORD_OPTIONS:
     print("[NOTE] Recording is disabled.", file=sys.stderr)
-    RECORD_OPTIONS = None
+    __RECORD_OPTIONS = None
 else:
     print("[NOTE] Recording is enabled.", file=sys.stderr)
-    RECORD_OPTIONS = RecordOptions(RECORD_OPTIONS)
+    __RECORD_OPTIONS = RecordOptions(__RECORD_OPTIONS)
 
 if config_changed:
     with open("config.json", "w") as f:
         json.dump(config, f, indent=4)
 
 def force_disable_record():
-    RECORD_OPTIONS = None
+    global __RECORD_OPTIONS
+    __RECORD_OPTIONS = None
 
 _upload_mode = os.environ.get("S3SPLUS_UPLOAD_MODE", "").lower()
 if _upload_mode == "test":

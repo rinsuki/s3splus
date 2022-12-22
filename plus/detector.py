@@ -9,18 +9,27 @@ import threading
 import cv2
 import numpy
 
-from .config import RECORD_OPTIONS
+from .config import get_record_options
 
 from .mask.music import MusicTitleMaskStore
 
 from .constants import Rule
 from .mask.images import *
 
+class GameMode(Enum):
+    UNKNOWN = 0
+    BATTLE = 1
+    SALMON = 2
+
+    def is_valid(self):
+        return self != GameMode.UNKNOWN
+
 class State(Enum):
     UNKNOWN = 0
     ERROR_SCHEDULE_REFRESH = -100
+    LOBBY_MATCHING = 9999
+
     BATTLE_LOBBY = 10100
-    BATTLE_LOBBY_MATCHING = 10150
     BATTLE_LOBBY_MATCHED = 10190
     BATTLE_INGAME_INTRO = 10200
     BATTLE_INGAME = 10210
@@ -30,9 +39,29 @@ class State(Enum):
     BATTLE_RESULT_SCOREBOARD = 10390
     BATTLE_RESULT_BANKARA_CHALLENGE_FINISH = 10391
 
+    SALMON_LOBBY = 20100
+    SALMON_LOBBY_MATCHED = 20190
+    SALMON_INGAME_INTRO = 20200
+    SALMON_INGAME = 20210
+    SALMON_RESULT_WAVES = 20300
+    SALMON_RESULT_REACTION = 20310
+    SALMON_RESULT_PLAYERLIST = 20350
+    SALMON_RESULT_RATE_DIFF = 20355
+    SALMON_RESULT_POINT_DESC = 20360
+    SALMON_RESULT_CURRENT_POINTS = 20370
+
+    def mode(self):
+        if self.value >= 10000 and self.value < 20000:
+            return GameMode.BATTLE
+        elif self.value >= 20000 and self.value < 30000:
+            return GameMode.SALMON
+        else:
+            return GameMode.UNKNOWN
+
 class Detector:
     def __init__(self):
         self.current_state = State.UNKNOWN
+        self.last_valid_mode = GameMode.UNKNOWN
         self.current_state_frames = 0
         self.change_state_was_called = False
         self.prepare_next_battle("-startmissing")
@@ -44,6 +73,8 @@ class Detector:
             print(f"state changed: {self.current_state} -> {state}")
             self.current_state = state
             self.current_state_frames = 0
+            if state.mode().is_valid():
+                self.last_valid_mode = state.mode()
             return True
         self.current_state_frames += 1
         self.change_state_was_called = True
@@ -55,10 +86,10 @@ class Detector:
             if self.finalizing is not None:
                 self.finalizing.join()
             current_battle_dir = self.current_battle_dir()
-            self.finalizing = threading.Thread(target=self._finalize_another_thread, args=(current_battle_dir,))
+            self.finalizing = threading.Thread(target=self._finalize_another_thread, args=(current_battle_dir,self.last_valid_mode == GameMode.SALMON))
             self.finalizing.run()
             self.can_finalize = False
-    def _finalize_another_thread(self, battle_dir: str):
+    def _finalize_another_thread(self, battle_dir: str, is_salmon: bool):
         print("finalizing on another thread...")
         recording_json = None
         if self.recording is not None:
@@ -71,6 +102,7 @@ class Detector:
             **os.environ,
             "S3SPLUS_BATTLE_DIR": battle_dir,
             "S3SPLUS_RECORDING_JSON": json.dumps(recording_json),
+            "S3SPLUS_IS_SALMON": "YES" if is_salmon else "NO",
         })
         self.finalizing = None
 
@@ -82,9 +114,10 @@ class Detector:
         self.can_finalize = False
     
     def start_recording(self):
-        if not RECORD_OPTIONS:
+        ro = get_record_options()
+        if ro is None:
             return
-        self.recording = RECORD_OPTIONS.create()
+        self.recording = ro.create()
     
     def current_battle_dir(self):
         if self._current_battle_dir is None:
@@ -97,19 +130,27 @@ class Detector:
         frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         _, frameBW = cv2.threshold(frameGray, 0xE0, 255, cv2.THRESH_BINARY)
         # lobby
-        if BATTLE_LOBBY_MATCHING_PREFIX.check(frameBW):
-            if (self.current_state != State.BATTLE_RESULT_SCOREBOARD or self.current_state_frames > 30) and self.change_state(State.BATTLE_LOBBY_MATCHING):
+        if SHARAED_LOBBY_MATCHING_PREFIX.check(frameBW):
+            if (self.current_state != State.BATTLE_RESULT_SCOREBOARD or self.current_state_frames > 30) and self.change_state(State.LOBBY_MATCHING):
                 print("matching...")
+        if ERROR_SCHEDULE_REFRESH.check(frameBW):
+            if self.change_state(State.ERROR_SCHEDULE_REFRESH):
+                print("schedule refresh!")
+                self.finalize_if_need()
+        self.process_game_battle_always(frame, frameBW)
+        if self.last_valid_mode != GameMode.SALMON:
+            self.process_game_battle(frame, frameBW)
+        self.process_game_salmon_always(frame, frameBW)
+        if self.last_valid_mode != GameMode.BATTLE:
+            self.process_game_salmon(frame, frameBW)
+    
+    def process_game_battle_always(self, frame: numpy.ndarray, frameBW: numpy.ndarray):
         if BATTLE_LOBBY_MATCHED.check(frameBW):
             if self.change_state(State.BATTLE_LOBBY_MATCHED):
                 print("matched!")
                 self.finalize_if_need()
                 self.prepare_next_battle()
                 self.start_recording()
-        if ERROR_SCHEDULE_REFRESH.check(frameBW):
-            if self.change_state(State.ERROR_SCHEDULE_REFRESH):
-                print("schedule refresh!")
-                self.finalize_if_need()
         # ingame
         if BATTLE_INTRO_TITLE.check(frameBW):
             rule = None
@@ -134,6 +175,8 @@ class Detector:
                 print("failed to detect rule")
             if self.current_state_frames == 20:
                 cv2.imwrite(f"{self.current_battle_dir()}/intro.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+
+    def process_game_battle(self, frame: numpy.ndarray, frameBW: numpy.ndarray):
         if BATTLE_INGAME_TIME_COLON.check(frameBW):
             if self.change_state(State.BATTLE_INGAME):
                 print("ingame!")
@@ -187,3 +230,25 @@ class Detector:
                 print("result-bankara-challenge-finish!")
                 cv2.imwrite(f"{self.current_battle_dir()}/result_bankara_challenge_finish.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
                 self.finalize_if_need()
+
+    def process_game_salmon_always(self, frame: numpy.ndarray, frameBW: numpy.ndarray):
+        if SALMON_LOBBY_MATCHED.check(frameBW):
+            if self.change_state(State.SALMON_LOBBY_MATCHED):
+                print("salmon-matched!")
+                self.finalize_if_need()
+                self.prepare_next_battle("-salmon")
+                self.start_recording()
+        if SALMON_INGAME_WAVE_HEADER.check(frameBW):
+            if self.change_state(State.SALMON_INGAME):
+                print("salmon-ingame!")
+
+    def process_game_salmon(self, frame: numpy.ndarray, frameBW: numpy.ndarray):
+        if SALMON_RESULT_PLAYERLIST_1ST_DEAD_COUNT.check(frameBW):
+            if self.change_state(State.SALMON_RESULT_PLAYERLIST):
+                print("playerlist")
+                self.can_finalize=True
+        if SALMON_RESULT_POINT_DESC_HEADER.check(frameBW):
+            if self.change_state(State.SALMON_RESULT_POINT_DESC):
+                print("salmon-result!")
+                self.finalize_if_need()
+                
