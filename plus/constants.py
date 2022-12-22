@@ -7,5 +7,6 @@ class Rule(Enum):
     YAGURA = 300
     HOKO = 400
     ASARI = 500
+    TRICOLOR = 150
 
 SUPPORTED_GAME_LANGS = ["ja"]

@@ -123,6 +123,8 @@ class BattleDetector:
                 rule = Rule.HOKO
             elif BATTLE_INTRO_RULE_ASARI.check(frameBW):
                 rule = Rule.ASARI
+            elif BATTLE_INTRO_RULE_TRICOLOR_GUARD.check(frameBW) or BATTLE_INTRO_RULE_TRICOLOR_ATTACK.check(frameBW):
+                rule = Rule.TRICOLOR
             if rule is not None:
                 if self.change_state(State.BATTLE_INGAME_INTRO):
                     print("intro! rule=", rule)
