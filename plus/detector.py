@@ -9,28 +9,28 @@ import threading
 import cv2
 import numpy
 
-from plus.config import RECORD_OPTIONS
+from .config import RECORD_OPTIONS
 
-from ..mask.music import MusicTitleMaskStore
+from .mask.music import MusicTitleMaskStore
 
-from ..constants import Rule
-from ..mask.images import *
+from .constants import Rule
+from .mask.images import *
 
 class State(Enum):
     UNKNOWN = 0
     ERROR_SCHEDULE_REFRESH = -100
-    BATTLE_LOBBY = 100
-    BATTLE_LOBBY_MATCHING = 150
-    BATTLE_LOBBY_MATCHED = 190
-    BATTLE_INGAME_INTRO = 200
-    BATTLE_INGAME = 210
-    BATTLE_RESULT_PRE_FULLMAP = 300
-    BATTLE_RESULT = 310
-    BATTLE_RESULT_PROFILE = 350
-    BATTLE_RESULT_SCOREBOARD = 390
-    BATTLE_RESULT_BANKARA_CHALLENGE_FINISH = 391
+    BATTLE_LOBBY = 10100
+    BATTLE_LOBBY_MATCHING = 10150
+    BATTLE_LOBBY_MATCHED = 10190
+    BATTLE_INGAME_INTRO = 10200
+    BATTLE_INGAME = 10210
+    BATTLE_RESULT_PRE_FULLMAP = 10300
+    BATTLE_RESULT = 10310
+    BATTLE_RESULT_PROFILE = 10350
+    BATTLE_RESULT_SCOREBOARD = 10390
+    BATTLE_RESULT_BANKARA_CHALLENGE_FINISH = 10391
 
-class BattleDetector:
+class Detector:
     def __init__(self):
         self.current_state = State.UNKNOWN
         self.current_state_frames = 0
