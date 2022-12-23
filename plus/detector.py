@@ -6,6 +6,7 @@ import signal
 import subprocess
 import sys
 import threading
+import time
 import traceback
 import cv2
 import numpy
@@ -59,6 +60,24 @@ class State(Enum):
             return GameMode.SALMON
         else:
             return GameMode.UNKNOWN
+
+class TimerGroup:
+    def __init__(self):
+        self.timers = []
+    def new(tg, name: str):
+        class Timer:
+            def __init__(self, name: str):
+                self.name = name
+                self.start = time.time()
+            def __enter__(self):
+                return self
+            def __exit__(self, exc_type, exc_value, traceback):
+                tg.timers.append((self.name, time.time() - self.start))
+        return Timer(name)
+    def print(self):
+        # print as X.XXXms format
+        res = ", ".join([f"{name}: {t * 1000:.2f}ms" for name, t in self.timers])
+        print(res)
 
 class Detector:
     def __init__(self):
@@ -133,26 +152,35 @@ class Detector:
         return self._current_battle_dir
 
     def process_frame(self, frame: numpy.ndarray):
-        frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        _, frameBW = cv2.threshold(frameGray, 0xE0, 255, cv2.THRESH_BINARY)
+        tg = TimerGroup()
+        with tg.new("frame_gray"):
+            frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        with tg.new("frame_bw"):
+            _, frameBW = cv2.threshold(frameGray, 0xE0, 255, cv2.THRESH_BINARY)
         # lobby
-        if SHARAED_LOBBY_MATCHING_PREFIX.check(frameBW):
-            if (self.current_state != State.BATTLE_RESULT_SCOREBOARD or self.current_state_frames > 30) and self.change_state(State.LOBBY_MATCHING):
-                print("matching...")
-        if ERROR_SCHEDULE_REFRESH.check(frameBW):
-            if self.change_state(State.ERROR_SCHEDULE_REFRESH):
-                print("schedule refresh!")
-                self.finalize_if_need()
-        if SHARED_RESULT_PLEASE_WAIT.check(frameBW):
-            if self.change_state(State.RESULT_PLEASE_WAIT):
-                print("please wait screen after finished")
-                self.finalize_if_need()
-        self.process_game_battle_always(frame, frameBW)
+        with tg.new("check_shared"):
+            if SHARAED_LOBBY_MATCHING_PREFIX.check(frameBW):
+                if (self.current_state != State.BATTLE_RESULT_SCOREBOARD or self.current_state_frames > 30) and self.change_state(State.LOBBY_MATCHING):
+                    print("matching...")
+            if ERROR_SCHEDULE_REFRESH.check(frameBW):
+                if self.change_state(State.ERROR_SCHEDULE_REFRESH):
+                    print("schedule refresh!")
+                    self.finalize_if_need()
+            if SHARED_RESULT_PLEASE_WAIT.check(frameBW):
+                if self.change_state(State.RESULT_PLEASE_WAIT):
+                    print("please wait screen after finished")
+                    self.finalize_if_need()
+        with tg.new("check_battle_always"):
+            self.process_game_battle_always(frame, frameBW)
         if self.last_valid_mode != GameMode.SALMON:
-            self.process_game_battle(frame, frameBW)
-        self.process_game_salmon_always(frame, frameBW)
+            with tg.new("check_battle"):
+                self.process_game_battle(frame, frameBW)
+        with tg.new("check_salmon_always"):
+            self.process_game_salmon_always(frame, frameBW)
         if self.last_valid_mode != GameMode.BATTLE:
-            self.process_game_salmon(frame, frameBW)
+            with tg.new("check_salmon"):
+                self.process_game_salmon(frame, frameBW)
+        tg.print()
     
     def process_game_battle_always(self, frame: numpy.ndarray, frameBW: numpy.ndarray):
         if BATTLE_LOBBY_MATCHED.check(frameBW):
