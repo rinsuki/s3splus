@@ -7,7 +7,7 @@ from s3sproxy import prepare_battle_result, headbutt, s3s, utils, prefetch_check
 from glob import glob
 import functools
 import json
-import plusutils
+import plus.utils
 import msgpack
 
 
@@ -63,7 +63,7 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
     if payload["agent"] != "s3s":
         return orig_msgpack_packb(payload, *args, **kwargs)
     payload["agent"] = "s3splus"
-    payload["agent_version"] = plusutils.PLUS_VERSION
+    payload["agent_version"] = plus.utils.PLUS_VERSION
     if not is_salmon:
         payload["image_judge"] = open(f"{latest_battle_id}/result.png", "rb").read()
         if os.path.exists(f"{latest_battle_id}/result_scoreboard.png"):

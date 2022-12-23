@@ -10,6 +10,9 @@ import re
 
 from plus.detector import Detector
 from plus.config import force_disable_record
+from plus.utils import PLUS_VERSION
+
+print("Starting s3splus", PLUS_VERSION)
 
 input_file = sys.argv[1] if re.match(r"^-?[0-9]+$", sys.argv[1]) is None else int(sys.argv[1])
 cap = cv2.VideoCapture(input_file)
