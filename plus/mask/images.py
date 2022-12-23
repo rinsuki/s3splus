@@ -1,6 +1,7 @@
 from .mask import Mask
 
 SHARAED_LOBBY_MATCHING_PREFIX = Mask("shared_lobby_matching_prefix")
+SHARED_RESULT_PLEASE_WAIT = Mask("shared_result_please_wait")
 
 BATTLE_LOBBY_MATCHED = Mask("battle_lobby_matched")
 BATTLE_INTRO_TITLE = Mask("battle_intro_title")

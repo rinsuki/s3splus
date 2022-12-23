@@ -28,7 +28,8 @@ class GameMode(Enum):
 class State(Enum):
     UNKNOWN = 0
     ERROR_SCHEDULE_REFRESH = -100
-    LOBBY_MATCHING = 9999
+    LOBBY_MATCHING = 9000
+    RESULT_PLEASE_WAIT = 9900
 
     BATTLE_LOBBY = 10100
     BATTLE_LOBBY_MATCHED = 10190
@@ -141,6 +142,10 @@ class Detector:
         if ERROR_SCHEDULE_REFRESH.check(frameBW):
             if self.change_state(State.ERROR_SCHEDULE_REFRESH):
                 print("schedule refresh!")
+                self.finalize_if_need()
+        if SHARED_RESULT_PLEASE_WAIT.check(frameBW):
+            if self.change_state(State.RESULT_PLEASE_WAIT):
+                print("please wait screen after finished")
                 self.finalize_if_need()
         self.process_game_battle_always(frame, frameBW)
         if self.last_valid_mode != GameMode.SALMON:
