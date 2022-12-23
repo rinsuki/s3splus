@@ -6,6 +6,7 @@ import signal
 import subprocess
 import sys
 import threading
+import traceback
 import cv2
 import numpy
 
@@ -96,8 +97,12 @@ class Detector:
             self.recording.send_signal(signal.SIGINT)
             stdout_text, _ = self.recording.communicate()
             print(stdout_text)
-            recording_json = json.loads(stdout_text)
-            print("got recording response!")
+            try:
+                recording_json = json.loads(stdout_text)
+                print("got recording response!")
+            except:
+                print("failed to parse recording response")
+                traceback.print_exc()
         subprocess.Popen(["python3", "s3swrapper.py"], stdout=sys.stdout, stderr=sys.stderr, env={
             **os.environ,
             "S3SPLUS_BATTLE_DIR": battle_dir,
