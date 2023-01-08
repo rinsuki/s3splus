@@ -180,7 +180,7 @@ class Detector:
         if self.last_valid_mode != GameMode.BATTLE:
             with tg.new("check_salmon"):
                 self.process_game_salmon(frame, frameBW)
-        tg.print()
+        # tg.print()
     
     def process_game_battle_always(self, frame: numpy.ndarray, frameBW: numpy.ndarray):
         if BATTLE_LOBBY_MATCHED.check(frameBW):
