@@ -190,7 +190,7 @@ class Detector:
                 self.prepare_next_battle()
                 self.start_recording()
         # ingame
-        if BATTLE_INTRO_TITLE.check(frameBW):
+        if BATTLE_INTRO_TITLE.check(frameBW) or BATTLE_INTRO_TITLE_TRICOLOR.check(frameBW):
             rule = None
             if BATTLE_INTRO_RULE_NAWABARI.check(frameBW):
                 rule = Rule.NAWABARI
@@ -215,7 +215,7 @@ class Detector:
                 cv2.imwrite(f"{self.current_battle_dir()}/intro.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
 
     def process_game_battle(self, frame: numpy.ndarray, frameBW: numpy.ndarray):
-        if BATTLE_INGAME_TIME_COLON.check(frameBW):
+        if BATTLE_INGAME_TIME_COLON.check(frameBW) or BATTLE_INGAME_TIME_COLON_TRICOLOR.check(frameBW, 0.95):
             if self.change_state(State.BATTLE_INGAME):
                 print("ingame!")
                 self.current_music_title_mask_store = MusicTitleMaskStore()
