@@ -37,6 +37,7 @@ class State(Enum):
     BATTLE_LOBBY_MATCHED = 10190
     BATTLE_INGAME_INTRO = 10200
     BATTLE_INGAME = 10210
+    BATTLE_ERROR_NO_GAME_BY_DISCONNECT = 10290
     BATTLE_RESULT_PRE_FULLMAP = 10300
     BATTLE_RESULT = 10310
     BATTLE_RESULT_PROFILE = 10350
@@ -261,6 +262,10 @@ class Detector:
                 print("result-profile!")
             if self.current_state_frames == 30:
                 cv2.imwrite(f"{self.current_battle_dir()}/result_profile.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+                self.can_finalize = True
+        if ERROR_NO_GAME_BY_DISCONNECT.check(frameBW):
+            if self.change_state(State.BATTLE_ERROR_NO_GAME_BY_DISCONNECT):
+                print("error-no-game-by-disconnect!")
                 self.can_finalize = True
         if BATTLE_RESULT_SCOREBOARD_ABUTTON.check(frameBW) and (BATTLE_RESULT_SCOREBOARD_WINP.check(frameBW, 0.9) or BATTLE_RESULT_SCOREBOARD_WINP_TRICOLOR.check(frameBW, 0.9) or BATTLE_RESULT_SCOREBOARD_NO_GAME.check(frameBW)):
             if self.change_state(State.BATTLE_RESULT_SCOREBOARD):
