@@ -45,6 +45,7 @@ def pre_check():
             if res.status_code == 503:
                 print("Server Returns HTTP 503... Probably your token was expired?")
                 time.sleep(1)
+                continue
             break
         res.raise_for_status()
         res = res.json()
