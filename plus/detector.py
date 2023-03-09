@@ -257,7 +257,7 @@ class Detector:
             if self.current_state_frames == 30:
                 cv2.imwrite(f"{self.current_battle_dir()}/result_profile.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
                 self.can_finalize = True
-        if BATTLE_RESULT_SCOREBOARD_ABUTTON.check(frameBW) and (BATTLE_RESULT_SCOREBOARD_WINP.check(frameBW, 0.9) or BATTLE_RESULT_SCOREBOARD_WINP_TRICOLOR.check(frameBW, 0.9)):
+        if BATTLE_RESULT_SCOREBOARD_ABUTTON.check(frameBW) and (BATTLE_RESULT_SCOREBOARD_WINP.check(frameBW, 0.9) or BATTLE_RESULT_SCOREBOARD_WINP_TRICOLOR.check(frameBW, 0.9) or BATTLE_RESULT_SCOREBOARD_NO_GAME.check(frameBW)):
             if self.change_state(State.BATTLE_RESULT_SCOREBOARD):
                 print("result-scoreboard!")
             if self.current_state_frames == 30:
