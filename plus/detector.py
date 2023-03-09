@@ -29,6 +29,7 @@ class GameMode(Enum):
 class State(Enum):
     UNKNOWN = 0
     ERROR_SCHEDULE_REFRESH = -100
+    ERROR_SERVER_MAINTENANCE_SOON = -200
     LOBBY_MATCHING = 9000
     RESULT_PLEASE_WAIT = 9900
 
@@ -169,6 +170,10 @@ class Detector:
             if SHARED_RESULT_PLEASE_WAIT.check(frameBW):
                 if self.change_state(State.RESULT_PLEASE_WAIT):
                     print("please wait screen after finished")
+                    self.finalize_if_need()
+            if ERROR_SERVER_MAINTENANCE_SOON.check(frameBW):
+                if self.change_state(State.ERROR_SERVER_MAINTENANCE_SOON):
+                    print("server maintenance soon")
                     self.finalize_if_need()
         with tg.new("check_battle_always"):
             self.process_game_battle_always(frame, frameBW)

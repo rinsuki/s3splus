@@ -33,3 +33,4 @@ SALMON_RESULT_PLAYERLIST_1ST_DEAD_COUNT = Mask("salmon_result_playerlist_1st_dea
 SALMON_RESULT_POINT_DESC_HEADER = Mask("salmon_result_point_desc_header")
 
 ERROR_SCHEDULE_REFRESH = Mask("error_schedule_refresh")
+ERROR_SERVER_MAINTENANCE_SOON = Mask("error_server_maintenance_soon")
