@@ -1,4 +1,5 @@
 import json
+import time
 from PIL import Image
 import requests
 import os
@@ -39,7 +40,12 @@ def pre_check():
     #       (...but if you are reading this source, you might not be normal people...?)
     if os.path.exists("historydumpertokens.json"):
         hdt = json.load(open("historydumpertokens.json"))
-        res = requests.post(hdt["http"]["url"], headers=hdt["http"]["headers"])
+        while True:
+            res = requests.post(hdt["http"]["url"], headers=hdt["http"]["headers"])
+            if res.status_code == 503:
+                print("Server Returns HTTP 503... Probably your token was expired?")
+                time.sleep(1)
+            break
         res.raise_for_status()
         res = res.json()
         CONFIG_DATA["gtoken"] = res["gtoken"]
