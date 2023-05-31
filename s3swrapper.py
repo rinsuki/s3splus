@@ -72,7 +72,8 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
     payload["agent"] = "s3splus"
     payload["agent_version"] = plus.utils.PLUS_VERSION
     if not is_salmon:
-        payload["image_judge"] = open(f"{latest_battle_id}/result.png", "rb").read()
+        if os.path.exists(f"{latest_battle_id}/result.png"):
+            payload["image_judge"] = open(f"{latest_battle_id}/result.png", "rb").read()
         if os.path.exists(f"{latest_battle_id}/result_scoreboard.png"):
             payload["image_result"] = open(f"{latest_battle_id}/result_scoreboard.png", "rb").read()
         payload["image_gear"] = open(f"{latest_battle_id}/result_profile.png", "rb").read()
