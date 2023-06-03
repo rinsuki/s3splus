@@ -200,17 +200,17 @@ class Detector:
         # ingame
         if BATTLE_INTRO_TITLE.check(frameBW) or BATTLE_INTRO_TITLE_TRICOLOR.check(frameBW):
             rule = None
-            if BATTLE_INTRO_RULE_NAWABARI.check_with_alternative_y(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
+            if BATTLE_INTRO_RULE_NAWABARI.check_with_alternative_relative_y_offset(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
                 rule = Rule.NAWABARI
-            elif BATTLE_INTRO_RULE_AREA.check_with_alternative_y(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
+            elif BATTLE_INTRO_RULE_AREA.check_with_alternative_relative_y_offset(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
                 rule = Rule.AREA
-            elif BATTLE_INTRO_RULE_YAGURA.check_with_alternative_y(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
+            elif BATTLE_INTRO_RULE_YAGURA.check_with_alternative_relative_y_offset(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
                 rule = Rule.YAGURA
-            elif BATTLE_INTRO_RULE_HOKO.check_with_alternative_y(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
+            elif BATTLE_INTRO_RULE_HOKO.check_with_alternative_relative_y_offset(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
                 rule = Rule.HOKO
-            elif BATTLE_INTRO_RULE_ASARI.check_with_alternative_y(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
+            elif BATTLE_INTRO_RULE_ASARI.check_with_alternative_relative_y_offset(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
                 rule = Rule.ASARI
-            elif BATTLE_INTRO_RULE_TRICOLOR_GUARD.check_with_alternative_y(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC) or BATTLE_INTRO_RULE_TRICOLOR_ATTACK.check_with_alternative_y(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
+            elif BATTLE_INTRO_RULE_TRICOLOR_GUARD.check_with_alternative_relative_y_offset(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC) or BATTLE_INTRO_RULE_TRICOLOR_ATTACK.check_with_alternative_relative_y_offset(frameBW, Y_DIFF_EVENT_MODE_RULE_DESC):
                 rule = Rule.TRICOLOR
             if rule is not None:
                 if self.change_state(State.BATTLE_INGAME_INTRO):
