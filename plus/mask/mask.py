@@ -55,7 +55,7 @@ class Mask:
         print(self.mask_min.size, (self.max_x-self.min_x+1)*(self.max_y-self.min_y+1))
         if self.mask_min.size == 0:
             raise Exception("mask image is empty")
-    def check(self, img: cv2.Mat, sikii = 0.99):
+    def check(self, img: cv2.Mat, sikii: float = 0.99):
         img_crop_min = img[self.min_y:self.max_y+1, self.min_x:self.max_x+1]
         found = numpy.count_nonzero(img_crop_min == self.mask_min)
         found /= self.mask_min.size
@@ -67,3 +67,9 @@ class Mask:
         found /= self.mask.size
         # print("found_ful", found)
         return found > sikii
+    def check_with_alternative_relative_y_offset(self, img: cv2.Mat, y: int, sikii: float = 0.99):
+        if self.check(img, sikii):
+            return True
+        if self.check(img[y:img.shape[0], :], sikii):
+            return True
+        return False
