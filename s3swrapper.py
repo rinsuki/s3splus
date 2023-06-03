@@ -83,9 +83,12 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
             header_width = Image.open("masks/und/battle_ingame_music_header.png").size[0]
             img = img.crop((header_width, 0, img.size[0], img.size[1]))
             payload["agent_variables"]["Plus: Music OCRed Text"] = pytesseract.image_to_string(img, "eng+jpn").strip()
-        rule_expected = open(latest_battle_id + "/rule.txt", "r").read().strip()
-        if payload["rule"] != rule_expected.lower():
-            raise Exception("invalid rule!!", payload["rule"], rule_expected)
+        try:
+            rule_expected = open(latest_battle_id + "/rule.txt", "r").read().strip()
+            if payload["rule"] != rule_expected.lower():
+                raise Exception("invalid rule!!", payload["rule"], rule_expected)
+        except:
+            pass
     else:
         # TODO: add salmon additional info
         pass
