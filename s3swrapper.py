@@ -13,7 +13,7 @@ import msgpack
 
 
 GET_LATEST_BATTLE_ID = "0329c535a32f914fd44251be1f489e24"
-GET_LATEST_SALMON_ID = "a2704e18852efce9cdbc61e205e1ed4e"
+GET_LATEST_SALMON_ID = "eb947416660e0a7520549f6b9a8ffcd7"
 
 def get_latest_splatnet_battle_id():
     res = requests.post(utils.GRAPHQL_URL,
@@ -76,7 +76,8 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
             payload["image_judge"] = open(f"{latest_battle_id}/result.png", "rb").read()
         if os.path.exists(f"{latest_battle_id}/result_scoreboard.png"):
             payload["image_result"] = open(f"{latest_battle_id}/result_scoreboard.png", "rb").read()
-        payload["image_gear"] = open(f"{latest_battle_id}/result_profile.png", "rb").read()
+        if os.path.exists(f"{latest_battle_id}/result_profile.png"):
+            payload["image_gear"] = open(f"{latest_battle_id}/result_profile.png", "rb").read()
         with Image.open(latest_battle_id + "/music-title.png") as img:
             payload["agent_variables"]["Plus: Music Width"] = img.size[0]
             from pytesseract import pytesseract
