@@ -38,6 +38,7 @@ class State(Enum):
     BATTLE_LOBBY = 10100
     BATTLE_LOBBY_MATCHED = 10190
     BATTLE_INGAME_INTRO = 10200
+    BATTLE_INGAME_INTRO_EST_POWER = 10205
     BATTLE_INGAME = 10210
     BATTLE_ERROR_NO_GAME_BY_DISCONNECT = 10290
     BATTLE_RESULT_PRE_FULLMAP = 10300
@@ -223,7 +224,12 @@ class Detector:
                 cv2.imwrite(f"{self.current_battle_dir()}/intro.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
 
     def process_game_battle(self, frame: numpy.ndarray, frameBW: numpy.ndarray):
-        if BATTLE_INGAME_TIME_COLON.check(frameBW) or BATTLE_INGAME_TIME_COLON_TRICOLOR.check(frameBW, 0.95):
+        if BATTLE_INTRO_EST_POWER.check(frameBW):
+            if self.change_state(State.BATTLE_INGAME_INTRO_EST_POWER):
+                print("est power")
+                # save
+                cv2.imwrite(f"{self.current_battle_dir()}/intro_est_power.png", frameBW, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        if self.current_state != State.BATTLE_ERROR_NO_GAME_BY_DISCONNECT and (BATTLE_INGAME_TIME_COLON.check(frameBW) or BATTLE_INGAME_TIME_COLON_TRICOLOR.check(frameBW, 0.95)):
             if self.change_state(State.BATTLE_INGAME):
                 print("ingame!")
                 self.current_music_title_mask_store = MusicTitleMaskStore()

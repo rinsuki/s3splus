@@ -24,6 +24,7 @@ BATTLE_INTRO_RULE_HOKO = Mask("battle_intro_rule_hoko")
 BATTLE_INTRO_RULE_ASARI = Mask("battle_intro_rule_asari")
 BATTLE_INTRO_RULE_TRICOLOR_GUARD = Mask("battle_intro_rule_tricolor_guard")
 BATTLE_INTRO_RULE_TRICOLOR_ATTACK = Mask("battle_intro_rule_tricolor_attack")
+BATTLE_INTRO_EST_POWER = Mask("battle_intro_est_power")
 BATTLE_RESULT_BANKARA_CHALLENGE_FINISH_TITLE = Mask("battle_result_bankara_challenge_finish_title")
 BATTLE_RESULT_BANKARA_CHALLENGE_FINISH_ABUTTON = Mask("battle_result_bankara_challenge_finish_abutton")
 

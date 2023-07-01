@@ -10,7 +10,7 @@ import functools
 import json
 import plus.utils
 import msgpack
-
+from pytesseract import pytesseract
 
 GET_LATEST_BATTLE_ID = "0329c535a32f914fd44251be1f489e24"
 GET_LATEST_SALMON_ID = "eb947416660e0a7520549f6b9a8ffcd7"
@@ -78,9 +78,10 @@ def overrided_msgpack_packb(payload, *args, **kwargs):
             payload["image_result"] = open(f"{latest_battle_id}/result_scoreboard.png", "rb").read()
         if os.path.exists(f"{latest_battle_id}/result_profile.png"):
             payload["image_gear"] = open(f"{latest_battle_id}/result_profile.png", "rb").read()
+        if os.path.exists(f"{latest_battle_id}/intro_est_power.png"):
+            payload["agent_variables"]["Plus: Rival Est Power (OCR)"] = pytesseract.image_to_string(f"{latest_battle_id}/intro_est_power.png", "eng+jpn").strip()
         with Image.open(latest_battle_id + "/music-title.png") as img:
             payload["agent_variables"]["Plus: Music Width"] = img.size[0]
-            from pytesseract import pytesseract
             header_width = Image.open("masks/und/battle_ingame_music_header.png").size[0]
             img = img.crop((header_width, 0, img.size[0], img.size[1]))
             payload["agent_variables"]["Plus: Music OCRed Text"] = pytesseract.image_to_string(img, "eng+jpn").strip()
