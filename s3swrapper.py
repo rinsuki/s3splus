@@ -4,7 +4,7 @@ from PIL import Image
 import requests
 import os
 from plus.config import UPLOAD_MODE
-from s3sproxy import prepare_battle_result, headbutt, s3s, utils, prefetch_checks, write_config, CONFIG_DATA, check_statink_key, set_language, fetch_and_upload_single_result
+from s3sproxy import prepare_battle_result, headbutt, s3s, utils, prefetch_checks, write_config, CONFIG_DATA, check_statink_key, set_language, fetch_and_upload_single_result, iksm
 from glob import glob
 import functools
 import json
@@ -12,11 +12,11 @@ import plus.utils
 import msgpack
 from pytesseract import pytesseract
 
-GET_LATEST_BATTLE_ID = "0329c535a32f914fd44251be1f489e24"
-GET_LATEST_SALMON_ID = "eb947416660e0a7520549f6b9a8ffcd7"
+GET_LATEST_BATTLE_ID = "73462e18d464acfdf7ac36bde08a1859aa2872a90ed0baed69c94864c20de046"
+GET_LATEST_SALMON_ID = "bc8a3d48e91d5d695ef52d52ae466920670d4f4381cb288cd570dc8160250457"
 
 def get_latest_splatnet_battle_id():
-    res = requests.post(utils.GRAPHQL_URL,
+    res = requests.post(iksm.GRAPHQL_URL,
         data=utils.gen_graphql_body(GET_LATEST_BATTLE_ID),
         headers=headbutt()
     )
@@ -24,7 +24,7 @@ def get_latest_splatnet_battle_id():
     return res.json()["data"]["vsResult"]["historyGroups"]["nodes"][0]["historyDetails"]["nodes"][0]["id"]
 
 def get_latest_splatnet_salmon_id():
-    res = requests.post(utils.GRAPHQL_URL,
+    res = requests.post(iksm.GRAPHQL_URL,
         data=utils.gen_graphql_body(GET_LATEST_SALMON_ID),
         headers=headbutt()
     )
