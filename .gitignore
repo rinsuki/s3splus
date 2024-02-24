@@ -2,3 +2,4 @@ battles/*
 **/__pycache__
 historydumpertokens.json
 config.json
+captures.*.png

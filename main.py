@@ -30,9 +30,12 @@ while True:
     ret, frame = cap.read(cv2.IMREAD_GRAYSCALE)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     if ret:
+        wk = cv2.waitKey(1)
         detector.process_frame(frame)
         cv2.imshow("frame", frame)
         i += 1
         if i % 2 == 0:
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if wk & 0xFF == ord('q'):
                 break
+            if wk & 0xFF == ord('s'):
+                cv2.imwrite(f"captures.{datetime.datetime.now().strftime('%Y%m%d.%H%M%S')}.png", frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
