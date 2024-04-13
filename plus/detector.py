@@ -128,7 +128,7 @@ class Detector:
             except:
                 print("failed to parse recording response")
                 traceback.print_exc()
-        subprocess.Popen(["python3", "s3swrapper.py"], stdout=sys.stdout, stderr=sys.stderr, env={
+        subprocess.Popen([sys.executable, "s3swrapper.py"], stdout=sys.stdout, stderr=sys.stderr, env={
             **os.environ,
             "S3SPLUS_BATTLE_DIR": battle_dir,
             "S3SPLUS_RECORDING_JSON": json.dumps(recording_json),
